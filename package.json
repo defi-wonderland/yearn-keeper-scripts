@@ -1,0 +1,78 @@
+{
+  "name": "@yearn/keeper-scripts",
+  "version": "0.0.1",
+  "description": "Yearn's keeper script for The Keep3r Network",
+  "keywords": [
+    "keep3r",
+    "job",
+    "ethereum",
+    "yearn"
+  ],
+  "license": "MIT",
+  "author": "Yearn",
+  "contributors": [
+    "0xng (https://github.com/0xng)",
+    "gotzenx (https://github.com/gotzenx)",
+    "0xGorilla (https://github.com/0xGorilla)"
+  ],
+  "private": true,
+  "scripts": {
+    "postinstall": "eth-sdk",
+    "start:harvest-v2": "ts-node src/harvest-v2-keep3r-v2.ts",
+    "start:harvest": "ts-node src/harvest-v2",
+    "start:tend-keep3r-v2": "ts-node src/tend-v2-keep3r-v2.ts",
+    "start:tend-beta": "ts-node src/tend-v2-beta.ts",
+    "start:tend": "ts-node src/tend-v2.ts",
+    "build": "eth-sdk && tsc",
+    "prod:harvest-v2": "node dist/src/harvest-v2.js",
+    "prod:harvest": "node dist/src/harvest.js",
+    "prod:tend-keep3r-v2": "node dist/src/tend-keep3r-v2.js",
+    "prod:tend-beta": "node dist/src/tend-beta.js",
+    "prod:tend": "node dist/src/tend.js",
+    "lint": "xo",
+    "lint:fix": "xo --fix"
+  },
+  "lint-staged": {
+    "*.ts": "yarn lint"
+  },
+  "dependencies": {
+    "@keep3r-network/keeper-scripting-utils": "0.0.0-a0ca2299",
+    "dotenv": "16.0.3",
+    "ethers": "5.6.9",
+    "lodash.isequal": "4.5.0",
+    "undici": "5.10.0"
+  },
+  "devDependencies": {
+    "@dethcrypto/eth-sdk": "0.3.3",
+    "@dethcrypto/eth-sdk-client": "0.1.6",
+    "@types/lodash.isequal": "4.5.6",
+    "husky": ">=6",
+    "lint-staged": ">=10",
+    "ts-node": "10.9.1",
+    "typescript": "4.8.4",
+    "xo": "0.52.3"
+  },
+  "xo": {
+    "prettier": true,
+    "rules": {
+      "unicorn/prefer-module": 0,
+      "unicorn/no-new-array": "warn",
+      "import/extensions": 0,
+      "new-cap": 0,
+      "@typescript-eslint/no-unsafe-assignment": 0,
+      "@typescript-eslint/no-dynamic-delete": "warn",
+      "@typescript-eslint/no-unsafe-call": "warn",
+      "@typescript-eslint/no-unsafe-return": "warn",
+      "@typescript-eslint/naming-convention": [
+        "error",
+        {
+          "selector": "variable",
+          "format": [
+            "camelCase",
+            "UPPER_CASE"
+          ]
+        }
+      ]
+    }
+  }
+}
