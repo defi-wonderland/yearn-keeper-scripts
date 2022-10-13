@@ -112,12 +112,13 @@ export function tryToWorkHarvestStrategy(props: TryToWorkHarvestProps): void {
       };
 
       // We populate the transactions we will use in our bundles. Notice we are calling the stealthRelayer's execute function
+      // Note: when the txs we are going to include in our batch are different between one another, we must ensure BURST_SIZE = len(functionArgs)
+      //       this is why we populate the functionArgs like this
       const txs: TransactionRequest[] = await populateTransactions({
         chainId: CHAIN_ID,
         contract: stealthRelayer,
         functionArgs: [
-          [job.address, workData[strategy], stealthHash, firstBlockOfBatch],
-          [job.address, workData[strategy], stealthHash, firstBlockOfBatch + 1],
+          new Array(BURST_SIZE).fill(null).map((_, index) => [job.address, workData[strategy], stealthHash, firstBlockOfBatch + index]),
         ],
         functionName: 'execute',
         options,

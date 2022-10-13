@@ -66,9 +66,9 @@ This repository enables keepers of the Keep3r Network to execute Yearn's jobs on
 
 ## Useful Links
 
-- [Harvest Keep3rV2 Job](https://etherscan.io/address/0xE6DD4B94B0143142E6d7ef3110029c1dcE8215cb)
+- [Harvest Keep3rV2 Job](https://etherscan.io/address/0x220a85bCd2212ab0b27EFd0de8b5e03175f0adee)
 - [Harvest Keep3rV1 Job](https://etherscan.io/address/0x2150b45626199CFa5089368BDcA30cd0bfB152D6)
-- [Tend V2 Keep3rV2 Job](https://etherscan.io/address/0xcd7f72f12c4b87dabd31d3aa478a1381150c32b3)
+- [Tend V2 Keep3rV2 Job](https://etherscan.io/address/0xdeE991cbF8527A33E84a2aAb8a65d68D5D591bAa)
 - [Tend V2 Beta Job](https://etherscan.io/address/0xf72D7E44ec3F79379912B8d0f661bE954a101159)
 - [Tend V2 Job](https://etherscan.io/address/0x2ef7801c6A9d451EF20d0F513c738CC012C57bC3)
 - [Stealth Relayer](https://etherscan.io/address/0x0a61c2146A7800bdC278833F21EBf56Cd660EE2a)
