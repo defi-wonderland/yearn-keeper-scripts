@@ -31,8 +31,14 @@ export function tryToWorkTendStrategy(props: TryToWorkTendProps): void {
       try {
         await job.callStatic[workFunction](strategy);
       } catch (error: unknown) {
-        if (error instanceof Error) console.log('message:', error.message);
-        console.log(`Failed when attempting to call work statically. Strategy: ${strategy}. Returning.`);
+        if (
+          error instanceof Error &&
+          !error.message.includes('StrategyNotWorkable()') &&
+          !error.message.includes('V2Keep3rJob::work:not-workable')
+        ) {
+          console.log(`Failed when attempting to call work statically. Strategy: ${strategy}. Message: ${error.message}. Returning.`);
+        }
+
         const temporaryLastWorkAt: BigNumber = await job.lastWorkAt(strategy);
         if (!temporaryLastWorkAt.eq(lastWorkAt[strategy])) {
           lastWorkAt[strategy] = temporaryLastWorkAt;

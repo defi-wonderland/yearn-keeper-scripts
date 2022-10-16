@@ -52,8 +52,12 @@ export function tryToWorkHarvestStrategy(props: TryToWorkHarvestProps): void {
       try {
         await stealthRelayer.callStatic.execute(job.address, workData[strategy], stealthHash, block.number);
       } catch (error: unknown) {
-        if (error instanceof Error) console.log('message:', error.message);
-        console.log(`Failed when attempting to call work statically. Strategy: ${strategy}. Returning.`);
+        // To ensure we don't get an absurd amount of logs, we only log the error if the error is not related with the strategy not being
+        // workable.
+        if (error instanceof Error && !error.message.includes('reason=null') && !error.message.includes('V2Keep3rJob::work:not-workable')) {
+          console.log(`Failed when attempting to call work statically. Strategy: ${strategy}. Message: ${error.message}. Returning.`);
+        }
+
         /*
          If the call static failed to work the strategy we check whether it is because the variable component has not been fulfilled yet,
          or due to another keeper having worked it.
