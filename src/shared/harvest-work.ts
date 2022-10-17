@@ -77,6 +77,8 @@ export function tryToWorkHarvestStrategy(props: TryToWorkHarvestProps): void {
         return;
       }
 
+      console.log(`Attempting to work ${strategy} statically succeeded. Preparing real transaction...`);
+
       // If the strategy is workable, we optimistically set the strategyWorkInProgress[strategy] mapping to true, as we will send a bundle
       strategyWorkInProgress[strategy] = true;
       // Get the signer's (keeper) current nonce
@@ -106,6 +108,8 @@ export function tryToWorkHarvestStrategy(props: TryToWorkHarvestProps): void {
         priorityFeeInWei: PRIORITY_FEE,
       });
 
+      console.log('Successfully calculated gas parameters. Populating Transactions...');
+
       // We declare what options we would like our transaction to have
       const options: Overrides = {
         gasLimit: 5_000_000,
@@ -128,6 +132,8 @@ export function tryToWorkHarvestStrategy(props: TryToWorkHarvestProps): void {
         options,
       });
 
+      console.log('Transactions populated successfully. Creating bundles...');
+
       /*
          We create our batch of bundles. In this case this will be a batch of two bundles that will contain different transactions.
          The transactions will be different due to stealthRelayer's requirement of the block passed a parameter
@@ -138,6 +144,8 @@ export function tryToWorkHarvestStrategy(props: TryToWorkHarvestProps): void {
         burstSize: BURST_SIZE,
         firstBlockOfBatch,
       });
+
+      console.log('Bundles created successfuly');
 
       /*
          We send our batch of bundles and recreate new ones until we or another keeper works the strategy.
