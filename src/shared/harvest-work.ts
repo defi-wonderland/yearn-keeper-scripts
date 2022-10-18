@@ -125,9 +125,9 @@ export function tryToWorkHarvestStrategy(props: TryToWorkHarvestProps): void {
       const txs: TransactionRequest[] = await populateTransactions({
         chainId: CHAIN_ID,
         contract: stealthRelayer,
-        functionArgs: [
-          new Array(BURST_SIZE).fill(null).map((_, index) => [job.address, workData[strategy], stealthHash, firstBlockOfBatch + index]),
-        ],
+        functionArgs: new Array(BURST_SIZE)
+          .fill(null)
+          .map((_, index) => [job.address, workData[strategy], stealthHash, firstBlockOfBatch + index]),
         functionName: 'execute',
         options,
       });
