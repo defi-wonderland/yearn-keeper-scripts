@@ -50,56 +50,62 @@ export function tryToWorkTendStrategy(props: TryToWorkTendProps): void {
 
       strategyWorkInProgress[strategy] = true;
 
-      const currentNonce = await provider.getTransactionCount(txSigner.address);
+      try {
+        const currentNonce = await provider.getTransactionCount(txSigner.address);
 
-      const blocksAhead = FUTURE_BLOCKS + BURST_SIZE;
+        const blocksAhead = FUTURE_BLOCKS + BURST_SIZE;
 
-      const {priorityFeeInGwei, maxFeePerGas} = getMainnetGasType2Parameters({
-        block,
-        blocksAhead,
-        priorityFeeInWei: PRIORITY_FEE,
-      });
+        const {priorityFeeInGwei, maxFeePerGas} = getMainnetGasType2Parameters({
+          block,
+          blocksAhead,
+          priorityFeeInWei: PRIORITY_FEE,
+        });
 
-      const options: Overrides = {
-        gasLimit: 1_000_000,
-        nonce: currentNonce,
-        maxFeePerGas,
-        maxPriorityFeePerGas: priorityFeeInGwei,
-        type: 2,
-      };
+        const options: Overrides = {
+          gasLimit: 1_000_000,
+          nonce: currentNonce,
+          maxFeePerGas,
+          maxPriorityFeePerGas: priorityFeeInGwei,
+          type: 2,
+        };
 
-      const txs: TransactionRequest[] = await populateTransactions({
-        chainId: CHAIN_ID,
-        contract: job,
-        functionArgs: [[strategy]],
-        functionName: workFunction,
-        options,
-      });
+        const txs: TransactionRequest[] = await populateTransactions({
+          chainId: CHAIN_ID,
+          contract: job,
+          functionArgs: [[strategy]],
+          functionName: workFunction,
+          options,
+        });
 
-      const firstBlockOfBatch = block.number + FUTURE_BLOCKS;
-      const bundles = createBundlesWithSameTxs({
-        unsignedTxs: txs,
-        burstSize: BURST_SIZE,
-        firstBlockOfBatch,
-      });
+        const firstBlockOfBatch = block.number + FUTURE_BLOCKS;
+        const bundles = createBundlesWithSameTxs({
+          unsignedTxs: txs,
+          burstSize: BURST_SIZE,
+          firstBlockOfBatch,
+        });
 
-      const result = await sendAndRetryUntilNotWorkable({
-        txs,
-        provider,
-        priorityFeeInWei: PRIORITY_FEE,
-        signer: txSigner,
-        bundles,
-        newBurstSize: BURST_SIZE,
-        flashbots,
-        isWorkableCheck: async () => job.workable(strategy),
-        staticDebugId: strategy,
-        dynamicDebugId: makeid(5),
-      });
+        const result = await sendAndRetryUntilNotWorkable({
+          txs,
+          provider,
+          priorityFeeInWei: PRIORITY_FEE,
+          signer: txSigner,
+          bundles,
+          newBurstSize: BURST_SIZE,
+          flashbots,
+          isWorkableCheck: async () => job.workable(strategy),
+          staticDebugId: strategy,
+          dynamicDebugId: makeid(5),
+        });
 
-      if (result) console.log('===== Tx SUCCESS =====', strategy);
-      lastWorkAt[strategy] = await job.lastWorkAt(strategy);
-      strategyWorkInProgress[strategy] = false;
-      tryToWorkTendStrategy(props);
+        if (result) console.log('===== Tx SUCCESS =====', strategy);
+        lastWorkAt[strategy] = await job.lastWorkAt(strategy);
+        tryToWorkTendStrategy(props);
+
+      } catch (error: unknown) {
+        console.error(error);
+      } finally {
+        strategyWorkInProgress[strategy] = false;
+      }
     });
   }, time);
 }
