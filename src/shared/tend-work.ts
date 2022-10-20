@@ -100,7 +100,6 @@ export function tryToWorkTendStrategy(props: TryToWorkTendProps): void {
         if (result) console.log('===== Tx SUCCESS =====', strategy);
         lastWorkAt[strategy] = await job.lastWorkAt(strategy);
         tryToWorkTendStrategy(props);
-
       } catch (error: unknown) {
         console.error(error);
       } finally {
