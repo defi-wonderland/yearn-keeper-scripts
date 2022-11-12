@@ -38,8 +38,11 @@ export async function harvestRun(props: HarvestRunProps): Promise<void> {
   provider.on(job.filters.StrategyAdded(), async (eventData) => {
     const strategy = defaultAbiCoder.decode(['address', 'uint256'], eventData.data)[0] as string;
     console.log('^^^^^^^^^^^^^^^^^ NEW STRATEGY ADDED TO JOB ^^^^^^^^^^^^^^^^^', strategy);
+    const newWorkData = job.interface.encodeFunctionData('work', [strategy]);
     // Contract sets lastWorkAt as 0 when adding a new strategy to the job.
     lastWorkAt[strategy] = BigNumber.from(0);
+    workData[strategy] = newWorkData;
+
     tryToWorkFunc({
       ...props,
       strategy,
