@@ -4,13 +4,12 @@ on:
   push:
     branches:
       - main
-      - public
 
 jobs:
   tag:
+    if: github.repository == 'defi-wonderland/yearn-keeper-scripts' && !github.event.created
     name: Create tag for new version
     runs-on: ubuntu-latest
-    if: "!github.event.created"
     outputs:
       tag_name: ${{ steps.create_new_tag.outputs.tag }}
     steps:
