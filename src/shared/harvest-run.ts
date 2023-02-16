@@ -12,12 +12,10 @@ export async function harvestRun(props: HarvestRunProps): Promise<void> {
 
   const strategies: string[] = await job.strategies();
 
-  const allLastWorksAt: BigNumber[] = await Promise.all(strategies.map(async (strategy) => job.lastWorkAt(strategy)));
-
   const allWorkData: string[] = strategies.map((strategy) => job.interface.encodeFunctionData('work', [strategy]));
 
   for (const [i, strategy] of strategies.entries()) {
-    lastWorkAt[strategy] = allLastWorksAt[i];
+    lastWorkAt[strategy] = BigNumber.from(0);
     workData[strategy] = allWorkData[i];
   }
 
