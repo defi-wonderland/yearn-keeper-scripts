@@ -12,9 +12,8 @@ export async function tendRun(props: TendRunProps): Promise<void> {
 
   const strategies: string[] = await job.strategies();
 
-  const allLastWorksAt: BigNumber[] = await Promise.all(strategies.map(async (strategy) => job.lastWorkAt(strategy)));
-  for (const [i, strategy] of strategies.entries()) {
-    lastWorkAt[strategy] = allLastWorksAt[i];
+  for (const [, strategy] of strategies.entries()) {
+    lastWorkAt[strategy] = BigNumber.from(0);
   }
 
   for (const strategy of strategies) {
