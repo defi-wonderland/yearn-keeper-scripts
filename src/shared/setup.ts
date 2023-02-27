@@ -1,16 +1,16 @@
 import dotenv from 'dotenv';
-import type {UnsubscribeFunction} from '@keep3r-network/keeper-scripting-utils';
-import {BlockListener} from '@keep3r-network/keeper-scripting-utils';
-import type {Contract} from 'ethers';
-import {BigNumber, providers, Wallet} from 'ethers';
-import {COOLDOWN_INTERNAL_MINUTES} from '../utils/constants';
-import {getEnvVariable} from '../utils/misc';
-import type {CooldownWrapper, InitialSetup, RunSetup} from '../utils/types';
+import type { UnsubscribeFunction } from '@keep3r-network/keeper-scripting-utils';
+import { BlockListener } from '@keep3r-network/keeper-scripting-utils';
+import type { Contract } from 'ethers';
+import { BigNumber, providers, Wallet } from 'ethers';
+import { COOLDOWN_INTERNAL_MINUTES } from '../utils/constants';
+import { getEnvVariable } from '../utils/misc';
+import type { CooldownWrapper, InitialSetup, RunSetup } from '../utils/types';
 
 dotenv.config();
 
 export function loadInitialSetup(): InitialSetup {
-  const provider = new providers.WebSocketProvider(getEnvVariable('RPC_WSS_URI'));
+  const provider = new providers.JsonRpcProvider(getEnvVariable('NODE_URI_MAINNET'));
   const txSigner = new Wallet(getEnvVariable('TX_SIGNER_PRIVATE_KEY'), provider);
   const bundleSigner = new Wallet(getEnvVariable('BUNDLE_SIGNER_PRIVATE_KEY'), provider);
   return {
@@ -20,7 +20,7 @@ export function loadInitialSetup(): InitialSetup {
   };
 }
 
-export function loadRunSetup(provider: providers.WebSocketProvider): RunSetup {
+export function loadRunSetup(provider: providers.WebSocketProvider | providers.JsonRpcProvider): RunSetup {
   const blockListener = new BlockListener(provider);
   const lastWorkAt: Record<string, BigNumber> = {};
   const strategyWorkInProgress: Record<string, boolean> = {};
@@ -36,7 +36,7 @@ export function loadRunSetup(provider: providers.WebSocketProvider): RunSetup {
 }
 
 export async function fetchAndUpdateCooldown(job: Contract): Promise<CooldownWrapper> {
-  const wrapper = {value: BigNumber.from(0)};
+  const wrapper = { value: BigNumber.from(0) };
 
   wrapper.value = await job.workCooldown();
 

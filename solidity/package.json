@@ -1,0 +1,13 @@
+{
+  "name": "yearn-keeper-scripts-solidity",
+  "description": "Yearn Keeper Scripts Solidity Smart Contracts",
+  "private": true,
+  "scripts": {
+    "compile": "hardhat compile"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "2.2.1",
+    "ethers": "5.7.2",
+    "hardhat": "2.12.3"
+  }
+}
