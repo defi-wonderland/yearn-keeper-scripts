@@ -1,7 +1,7 @@
 import type { providers, Contract } from 'ethers';
-import { loadRunSetup } from './setup';
 import { Block } from '@ethersproject/abstract-provider';
-import { getStrategies } from '../utils/misc';
+import { getStrategies } from './batch-requests';
+import { BlockListener } from '@keep3r-network/keeper-scripting-utils';
 
 export async function testV2Keep3rRun(
   jobContract: Contract,
@@ -9,29 +9,20 @@ export async function testV2Keep3rRun(
   workFunction: string,
   broadcastMethod: (job: Contract, workMethod: string, workArguments: any[], block: Block) => Promise<void>
 ) {
-  const { blockListener } = loadRunSetup(provider);
+  const blockListener = new BlockListener(provider);
 
-  blockListener.stream(async (block) => {
+  blockListener.stream(async (block: Block) => {
     const workableStrategies = await getStrategies(jobContract);
     if (workableStrategies.length === 0) {
       console.info('Found no workable strategies.');
     }
     for (const [_, strategy] of workableStrategies.entries()) {
       try {
-        await tryToWorkFunc(strategy, block);
+        await broadcastMethod(jobContract, workFunction, [strategy], block);
         break;
       } catch (error: unknown) {
         if (error instanceof Error) console.log(`Strategy: ${strategy} failed with:`, error.message);
       }
     }
   });
-
-  async function tryToWorkFunc(strategy: string, block: Block) {
-    try {
-      await broadcastMethod(jobContract, workFunction, [strategy], block);
-    } catch (error: unknown) {
-      console.log('===== Tx FAILED =====', strategy);
-      if (error instanceof Error) console.log(`Strategy: ${strategy} failed with:`, error.message);
-    }
-  }
 }

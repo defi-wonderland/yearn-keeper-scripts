@@ -1,12 +1,16 @@
-import process from 'node:process';
-import type { UnsubscribeFunction } from '@keep3r-network/keeper-scripting-utils';
-import type { Address } from './types';
-import type { TransactionRequest, Block } from '@ethersproject/abstract-provider';
-import { BigNumber, Contract, ethers, Overrides, PopulatedTransaction } from 'ethers';
-import { FlashbotsBundleProvider, FlashbotsBundleTransaction, FlashbotsPrivateTransactionResponse } from '@flashbots/ethers-provider-bundle';
-import { bytecode } from '../../solidity/artifacts/contracts/BatchWorkable.sol/BatchWorkable.json';
+import {config} from 'dotenv'
+import type {UnsubscribeFunction} from '@keep3r-network/keeper-scripting-utils';
+import type {TransactionRequest, Block} from '@ethersproject/abstract-provider';
+import type {Contract, Overrides, PopulatedTransaction} from 'ethers';
+import {BigNumber, ethers} from 'ethers';
+import type {FlashbotsBundleTransaction} from '@flashbots/ethers-provider-bundle';
+import {FlashbotsBundleProvider, FlashbotsPrivateTransactionResponse} from '@flashbots/ethers-provider-bundle';
+import * as BatchWorkable from '../../../solidity/artifacts/contracts/BatchWorkable.sol/BatchWorkable.json';
+import type {Address} from './types';
 
-// TODO: move to scripting utils?
+config();
+
+// TODO: move to scripting utils, review why isn't working
 export function getEnvVariable(name: string): string {
   const value: string | undefined = process.env[name];
   if (!value) throw new Error(`Environment variable ${name} not found`);
@@ -26,7 +30,7 @@ export async function populateTx(
   functionName: string,
   functionArgs: any[],
   options: Overrides,
-  chainId: number
+  chainId: number,
 ): Promise<TransactionRequest> {
   const populatedTx: PopulatedTransaction = await contract.populateTransaction[functionName](...functionArgs, {
     ...options,
@@ -40,18 +44,10 @@ export async function populateTx(
   return formattedTx;
 }
 
-export async function getStrategies(job: Contract): Promise<string[]> {
-  const inputData = ethers.utils.defaultAbiCoder.encode(['address'], [job.address]);
-  const contractCreationCode = bytecode.concat(inputData.slice(2));
-  const encodedStrategies = await job.provider.call({ data: contractCreationCode });
-  const [workableStrategies] = ethers.utils.defaultAbiCoder.decode(['address[]'], encodedStrategies) as [string[]];
-  return workableStrategies;
-}
-
 export async function sendAndHandleResponse(
   flashbotsProvider: FlashbotsBundleProvider,
   privateTx: FlashbotsBundleTransaction,
-  maxBlockNumber?: number
+  maxBlockNumber?: number,
 ) {
   try {
     const response = await flashbotsProvider.sendPrivateTransaction(privateTx, {
@@ -64,7 +60,7 @@ export async function sendAndHandleResponse(
     }
 
     // TODO: abstract into functions
-    const simulation = await (response as FlashbotsPrivateTransactionResponse).simulate();
+    const simulation = await response.simulate();
     if ('error' in simulation || simulation.firstRevert) {
       console.error(`Transaction simulation error`, simulation);
       return;
@@ -72,7 +68,7 @@ export async function sendAndHandleResponse(
 
     console.debug(`Transaction simulation success`, simulation);
 
-    const resolution = await (response as FlashbotsPrivateTransactionResponse).wait();
+    const resolution = await response.wait();
     console.log(resolution);
 
     if (resolution == 0) {
@@ -84,6 +80,7 @@ export async function sendAndHandleResponse(
     if (error == 'Timed out') {
       console.debug('One of the sent Transactions timed out. This means around 20 blocks have passed and Flashbots has ceased retrying it.');
     }
+
     console.log(error);
   }
 }
@@ -95,10 +92,10 @@ export async function sendAndHandleResponse(
  * @param maxFeePerGas The max fee per gas to send with the transaction.
  */
 
-export interface GasType2Parameters {
+export type GasType2Parameters = {
   priorityFee: BigNumber;
   maxFeePerGas: BigNumber;
-}
+};
 
 export function getGasParametersNextBlock(block: Block, priorityFeeInGwei: number): GasType2Parameters {
   if (!block.baseFeePerGas) {
@@ -145,9 +142,4 @@ export function calculateTargetBlocks(burstSize: number, nextBlock: number): num
   }
 
   return targetBlocks;
-}
-
-export interface Relays {
-  chainId: number;
-  endpoint: string;
 }

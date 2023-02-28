@@ -1,60 +1,61 @@
-import { getStealthHash } from '@keep3r-network/keeper-scripting-utils';
-import type { TransactionRequest, Block } from '@ethersproject/abstract-provider';
-import { providers, Wallet, Overrides } from 'ethers';
-import { Contract } from 'ethers';
-import { FlashbotsBundleProvider, FlashbotsBundleTransaction } from '@flashbots/ethers-provider-bundle';
-import { calculateTargetBlocks, getEnvVariable, getMainnetGasType2Parameters, populateTx, Relays, sendAndHandleResponse } from '../utils/misc';
-import { DEFAULT_RELAYS } from '../utils/constants';
+import {getStealthHash} from '@keep3r-network/keeper-scripting-utils';
+import type {TransactionRequest, Block} from '@ethersproject/abstract-provider';
+import type {Wallet, Overrides, Contract} from 'ethers';
+import type {FlashbotsBundleTransaction} from '@flashbots/ethers-provider-bundle';
+import {FlashbotsBundleProvider} from '@flashbots/ethers-provider-bundle';
+import {calculateTargetBlocks, getMainnetGasType2Parameters, populateTx, sendAndHandleResponse} from './utils/misc';
 
 /**
  * @notice Creates and populate a transaction for work in a determinated job using flashbots
  *
  * @param provider			The provider which can be Json or Wss
  * @param flashbots			The flashbot that will send the bundle
- * @param burstSize 		The burst size
+ * @param burstSize 		The amount of transactions for future blocks to be broadcast each time
  * @param futureBlocks		The amount of future blocks.
  * @param priorityFeeInWei 	The priority fee in wei
  * @param gasLimit			The gas limit determines the maximum gas that can be spent in the transaction
  *
  */
 export class StealthBroadcastor {
-  public provider: providers.JsonRpcProvider | providers.WebSocketProvider;
-  public bundleSigner: Wallet;
+  public flashbotsProvider: FlashbotsBundleProvider;
+  public chainId: number;
   public stealthRelayer: Contract;
   public priorityFeeInGwei: number;
   public gasLimit: number;
   public burstSize: number;
-  public relays: Relays[];
+  public doStaticCall: boolean;
 
   constructor(
-    provider: providers.JsonRpcProvider,
-    bundleSigner: Wallet,
+    flashbotsProvider: FlashbotsBundleProvider,
     stealthRelayer: Contract,
     priorityFeeInGwei: number,
     gasLimit: number,
     burstSize: number,
-    relays: Relays[] = DEFAULT_RELAYS
+    doStaticCall: boolean = true
   ) {
-    this.provider = provider;
-    this.bundleSigner = bundleSigner;
+    this.flashbotsProvider = flashbotsProvider;
+    this.chainId = flashbotsProvider.network.chainId;
     this.priorityFeeInGwei = priorityFeeInGwei;
     this.gasLimit = gasLimit;
     this.stealthRelayer = stealthRelayer;
     this.burstSize = burstSize;
-    this.relays = relays;
+    this.doStaticCall = doStaticCall;
   }
 
   async tryToWorkOnStealthRelayer(jobContract: Contract, workMethod: string, workArguments: any[], block: Block) {
     const stealthHash = getStealthHash();
     const workData = jobContract.interface.encodeFunctionData(workMethod, [...workArguments]);
 
-    try {
-      await this.stealthRelayer.callStatic.execute(jobContract.address, workData, stealthHash, block.number);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw Error(`Static call failed with ${error.message}`);
+    if(this.doStaticCall){
+      try {
+        await this.stealthRelayer.callStatic.execute(jobContract.address, workData, stealthHash, block.number);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          throw new TypeError(`Static call failed with ${error.message}`);
+        }
+  
+        throw error;
       }
-      throw error;
     }
 
     console.log(`Attempting to work strategy statically succeeded. Preparing real transaction...`);
@@ -63,7 +64,7 @@ export class StealthBroadcastor {
 
     const targetBlocks = calculateTargetBlocks(this.burstSize, nextBlock);
 
-    const { priorityFee, maxFeePerGas } = getMainnetGasType2Parameters(block, this.priorityFeeInGwei, this.burstSize);
+    const {priorityFee, maxFeePerGas} = getMainnetGasType2Parameters(block, this.priorityFeeInGwei, this.burstSize);
 
     const txSigner = jobContract.signer as Wallet;
 
@@ -77,23 +78,13 @@ export class StealthBroadcastor {
       type: 2,
     };
 
-    const { chainId } = await this.provider.getNetwork();
-
-    const relayEndpoint = this.relays.find((obj) => obj.chainId === chainId)?.endpoint;
-
-    if (!relayEndpoint) {
-      return console.info('No relay endpoint has been found for this network.');
-    }
-
-    const flashbotsProvider = await FlashbotsBundleProvider.create(this.provider, this.bundleSigner, relayEndpoint);
-
     for (const targetBlock of targetBlocks) {
       const tx: TransactionRequest = await populateTx(
         this.stealthRelayer,
         'execute',
         [jobContract.address, workData, stealthHash, targetBlock],
         options,
-        chainId
+        this.chainId,
       );
 
       const privateTx: FlashbotsBundleTransaction = {
@@ -103,7 +94,7 @@ export class StealthBroadcastor {
 
       console.log('Transaction populated successfully. Sending bundle...');
 
-      await sendAndHandleResponse(flashbotsProvider, privateTx, targetBlock);
+      await sendAndHandleResponse(this.flashbotsProvider, privateTx, targetBlock);
     }
   }
 }

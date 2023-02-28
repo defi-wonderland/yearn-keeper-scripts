@@ -1,24 +1,30 @@
 import { getMainnetSdk } from '@dethcrypto/eth-sdk-client';
 import { testV2Keep3rRun } from './shared/v2-keeper-run';
-import { StealthBroadcastor } from './shared/stealthBroadcastor';
+import { StealthBroadcastor } from './keeper-scripting-utils/stealthBroadcastor';
 import { providers, Wallet } from 'ethers';
-import { getEnvVariable, Relays } from './utils/misc';
+import { getEnvVariable } from './keeper-scripting-utils/utils/misc';
+import { FlashbotsBundleProvider } from '@flashbots/ethers-provider-bundle';
 
+// SETUP
 const WORK_FUNCTION = 'work';
-const PRIORITY_FEE = 2e9; // TODO: changed this only for the test runs, the original still remain expressed as single decimals (so 2 instead of 2e9)
+const PRIORITY_FEE = 2e9;
 const GAS_LIMIT = 5_000_000;
-const BURST_SIZE = 2; // How many private transactions to send. If we are in block 100, and BURST_SIZE=2, it will send to block 101 and 102
+const BURST_SIZE = 2;
 
 (async () => {
+  // ENVIRONMENT
   const provider = new providers.JsonRpcProvider(getEnvVariable('NODE_URI_MAINNET'));
   const txSigner = new Wallet(getEnvVariable('TX_SIGNER_PRIVATE_KEY'), provider);
   const bundleSigner = new Wallet(getEnvVariable('BUNDLE_SIGNER_PRIVATE_KEY'), provider);
 
+  // CONTRACTS
   const harvestJob = getMainnetSdk(txSigner).harvestV2Keep3rV2;
   const stealthRelayer = getMainnetSdk(txSigner).stealthRelayer;
 
-  // One time setup
-  const rpcStealthBroacastor = new StealthBroadcastor(provider, bundleSigner, stealthRelayer, PRIORITY_FEE, GAS_LIMIT, BURST_SIZE);
+  // PROVIDERS
+  const flashbotsProvider = await FlashbotsBundleProvider.create(provider, bundleSigner);  
+  const rpcStealthBroacastor = new StealthBroadcastor(flashbotsProvider, stealthRelayer, PRIORITY_FEE, GAS_LIMIT, BURST_SIZE);
 
+  // INITIALIZE
   await testV2Keep3rRun(harvestJob, provider, WORK_FUNCTION, rpcStealthBroacastor.tryToWorkOnStealthRelayer.bind(rpcStealthBroacastor));
 })();

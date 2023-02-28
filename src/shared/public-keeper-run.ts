@@ -2,10 +2,10 @@ import {BigNumber, Event, providers, Contract} from 'ethers';
 import { Block } from '@ethersproject/abstract-provider';
 import {defaultAbiCoder} from 'ethers/lib/utils';
 import VaultFactoryABI from '../../abis/VaultFactory.json';
-import VaultChildABI from '../../abis/VaultChild.json';
 
-import {stopSubscription} from '../utils/misc';
-import {fetchAndUpdateCooldown, loadRunSetup} from './setup';
+import {stopSubscription} from '../keeper-scripting-utils/utils/misc';
+import { UnsubscribeFunction } from '@keep3r-network/keeper-scripting-utils';
+import { LastWorkAtMap, UnsubscribeStrategyMap } from 'src/keeper-scripting-utils/utils/types';
 
 const VAULT_FACTORY_ADDRESS = '0x21b1FC8A52f179757bf555346130bF27c0C2A17A';
 const VAULT_FACTORY_DEPLOYMENT_BLOCK = '0xF76E83';
@@ -31,7 +31,8 @@ export async function publicKeeperRun(
 ): Promise<void> {
   const vaultFactory = new Contract(VAULT_FACTORY_ADDRESS, VaultFactoryABI, provider);
 
-  const {lastWorkAt, unsubscribeStrategy, blockListener} = loadRunSetup(provider);
+  const lastWorkAt: LastWorkAtMap = {};
+  const unsubscribeStrategy: UnsubscribeStrategyMap = {};
 
   const allVaults: string[] = await vaultFactory.allDeployedVaults();
 
