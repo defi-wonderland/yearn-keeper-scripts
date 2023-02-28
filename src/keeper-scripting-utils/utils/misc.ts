@@ -1,22 +1,21 @@
-import { config } from 'dotenv';
-import type { UnsubscribeFunction } from '@keep3r-network/keeper-scripting-utils';
-import type { TransactionRequest, Block } from '@ethersproject/abstract-provider';
-import type { Contract, Overrides, PopulatedTransaction } from 'ethers';
-import { BigNumber } from 'ethers';
-import type { FlashbotsBundleTransaction } from '@flashbots/ethers-provider-bundle';
-import { FlashbotsBundleProvider } from '@flashbots/ethers-provider-bundle';
-import type { Address } from './types';
+import {config} from 'dotenv';
+import type {UnsubscribeFunction} from '@keep3r-network/keeper-scripting-utils';
+import type {TransactionRequest, Block} from '@ethersproject/abstract-provider';
+import type {Contract, Overrides, PopulatedTransaction} from 'ethers';
+import {BigNumber} from 'ethers';
+import type {FlashbotsBundleTransaction} from '@flashbots/ethers-provider-bundle';
+import {FlashbotsBundleProvider} from '@flashbots/ethers-provider-bundle';
+import type {Address} from './types';
 
 config();
 
-// TODO: move to scripting utils, review why isn't working
 export function getEnvVariable(name: string): string {
   const value: string | undefined = process.env[name];
   if (!value) throw new Error(`Environment variable ${name} not found`);
   return value;
 }
 
-// TODO: move to setup
+// TODO: move to setup or delete completely?
 export function stopSubscription(storage: Record<string, UnsubscribeFunction>, strategy: Address): void {
   if (storage[strategy]) {
     storage[strategy]();
@@ -29,7 +28,7 @@ export async function populateTx(
   functionName: string,
   functionArgs: any[],
   options: Overrides,
-  chainId: number
+  chainId: number,
 ): Promise<TransactionRequest> {
   const populatedTx: PopulatedTransaction = await contract.populateTransaction[functionName](...functionArgs, {
     ...options,
@@ -46,7 +45,7 @@ export async function populateTx(
 export async function sendAndHandleResponse(
   flashbotsProvider: FlashbotsBundleProvider,
   privateTx: FlashbotsBundleTransaction,
-  maxBlockNumber?: number
+  maxBlockNumber?: number,
 ) {
   try {
     const response = await flashbotsProvider.sendPrivateTransaction(privateTx, {
@@ -58,7 +57,6 @@ export async function sendAndHandleResponse(
       return;
     }
 
-    // TODO: abstract into functions
     const simulation = await response.simulate();
     if ('error' in simulation || simulation.firstRevert) {
       console.error(`Transaction simulation error`, simulation);
@@ -70,13 +68,13 @@ export async function sendAndHandleResponse(
     const resolution = await response.wait();
     console.log(resolution);
 
-    if (resolution == 0) {
+    if (resolution === 0) {
       console.log(`=================== TX INCLUDED =======================`);
-    } else if (resolution == 1) {
+    } else if (resolution === 1) {
       console.log(`==================== TX DROPPED =======================`);
     }
   } catch (error: unknown) {
-    if (error == 'Timed out') {
+    if (error === 'Timed out') {
       console.debug('One of the sent Transactions timed out. This means around 20 blocks have passed and Flashbots has ceased retrying it.');
     }
 
@@ -115,7 +113,7 @@ export function getMainnetGasType2Parameters(block: Block, priorityFeeInGwei: nu
     throw new Error('Missing property baseFeePerGas on block');
   }
 
-  if (burstSize == 0 || burstSize == 1) {
+  if (burstSize === 0 || burstSize === 1) {
     return getGasParametersNextBlock(block, priorityFeeInGwei);
   }
 
@@ -130,7 +128,7 @@ export function getMainnetGasType2Parameters(block: Block, priorityFeeInGwei: nu
 }
 
 export function calculateTargetBlocks(burstSize: number, nextBlock: number): number[] {
-  if (burstSize == 0 || burstSize == 1) {
+  if (burstSize === 0 || burstSize === 1) {
     return [nextBlock];
   }
 

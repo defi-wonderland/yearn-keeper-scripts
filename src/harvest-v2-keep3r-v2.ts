@@ -1,9 +1,9 @@
-import { getMainnetSdk } from '@dethcrypto/eth-sdk-client';
-import { testV2Keep3rRun } from './shared/v2-keeper-run';
-import { StealthBroadcastor } from './keeper-scripting-utils/stealthBroadcastor';
-import { providers, Wallet } from 'ethers';
-import { getEnvVariable } from './keeper-scripting-utils/utils/misc';
-import { FlashbotsBundleProvider } from '@flashbots/ethers-provider-bundle';
+import {getMainnetSdk} from '@dethcrypto/eth-sdk-client';
+import {providers, Wallet} from 'ethers';
+import {FlashbotsBundleProvider} from '@flashbots/ethers-provider-bundle';
+import {testV2Keep3rRun} from './shared/v2-keeper-run';
+import {StealthBroadcastor} from './keeper-scripting-utils/stealthBroadcastor';
+import {getEnvVariable} from './keeper-scripting-utils/utils/misc';
 
 // SETUP
 const WORK_FUNCTION = 'work';
@@ -22,7 +22,7 @@ const BURST_SIZE = 2;
   const stealthRelayer = getMainnetSdk(txSigner).stealthRelayer;
 
   // PROVIDERS
-  const flashbotsProvider = await FlashbotsBundleProvider.create(provider, bundleSigner);  
+  const flashbotsProvider = await FlashbotsBundleProvider.create(provider, bundleSigner);
   const rpcStealthBroacastor = new StealthBroadcastor(flashbotsProvider, stealthRelayer, PRIORITY_FEE, GAS_LIMIT, BURST_SIZE);
 
   // INITIALIZE

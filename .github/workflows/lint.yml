@@ -20,5 +20,5 @@ jobs:
           cache: "yarn"
       - run: yarn install --frozen-lockfile
       - run: yarn build
-      # - run: yarn lint // TODO: comment this out and fix errors when branches are merged
+      - run: yarn lint
       # - run: yarn test

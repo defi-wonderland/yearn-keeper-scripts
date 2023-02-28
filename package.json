@@ -57,13 +57,16 @@
       "unicorn/no-new-array": "warn",
       "import/extensions": 0,
       "new-cap": 0,
+      "import/no-unassigned-import": "warn",
+      "no-await-in-loop": "warn",
+      "n/prefer-global/process": "warn",
       "unicorn/filename-case": "warn",
       "@typescript-eslint/no-unsafe-assignment": 0,
       "@typescript-eslint/no-dynamic-delete": "warn",
       "@typescript-eslint/no-unsafe-call": "warn",
       "@typescript-eslint/no-unsafe-return": "warn",
       "@typescript-eslint/naming-convention": [
-        "error",
+        "warn",
         {
           "selector": "variable",
           "format": [

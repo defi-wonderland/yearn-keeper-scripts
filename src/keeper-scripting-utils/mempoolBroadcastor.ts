@@ -10,12 +10,9 @@ import type {providers, Overrides, Contract} from 'ethers';
  *
  */
 export class MempoolBroadcastor {
-  public provider: providers.JsonRpcProvider | providers.WebSocketProvider;
-  public gasLimit: number;
   public doStaticCall: boolean;
 
-  // TODO: add doStaticCall to other broadcastors (KMC-206)
-  constructor(provider: providers.JsonRpcProvider | providers.WebSocketProvider, gasLimit: number, doStaticCall = true) {
+  constructor(public provider: providers.JsonRpcProvider | providers.WebSocketProvider, public gasLimit: number, doStaticCall = true) {
     this.provider = provider;
     this.gasLimit = gasLimit;
     this.doStaticCall = doStaticCall;
@@ -29,7 +26,7 @@ export class MempoolBroadcastor {
    * @param block
    */
   tryToWorkOnMempool = async (jobContract: Contract, workMethod: string, methodArguments: Array<number | string>, block: Block) => {
-    const gasFees = await block.baseFeePerGas!;
+    const gasFees = block.baseFeePerGas!;
 
     // Create an object containing the fields we would like to add to our transaction.
     const options: Overrides = {

@@ -1,8 +1,7 @@
 import {getStealthHash} from '@keep3r-network/keeper-scripting-utils';
 import type {TransactionRequest, Block} from '@ethersproject/abstract-provider';
 import type {Wallet, Overrides, Contract} from 'ethers';
-import type {FlashbotsBundleTransaction} from '@flashbots/ethers-provider-bundle';
-import {FlashbotsBundleProvider} from '@flashbots/ethers-provider-bundle';
+import type {FlashbotsBundleTransaction, FlashbotsBundleProvider} from '@flashbots/ethers-provider-bundle';
 import {calculateTargetBlocks, getMainnetGasType2Parameters, populateTx, sendAndHandleResponse} from './utils/misc';
 
 /**
@@ -17,21 +16,15 @@ import {calculateTargetBlocks, getMainnetGasType2Parameters, populateTx, sendAnd
  *
  */
 export class StealthBroadcastor {
-  public flashbotsProvider: FlashbotsBundleProvider;
   public chainId: number;
-  public stealthRelayer: Contract;
-  public priorityFeeInGwei: number;
-  public gasLimit: number;
-  public burstSize: number;
-  public doStaticCall: boolean;
 
   constructor(
-    flashbotsProvider: FlashbotsBundleProvider,
-    stealthRelayer: Contract,
-    priorityFeeInGwei: number,
-    gasLimit: number,
-    burstSize: number,
-    doStaticCall: boolean = true
+    public flashbotsProvider: FlashbotsBundleProvider,
+    public stealthRelayer: Contract,
+    public priorityFeeInGwei: number,
+    public gasLimit: number,
+    public burstSize: number,
+    public doStaticCall = true,
   ) {
     this.flashbotsProvider = flashbotsProvider;
     this.chainId = flashbotsProvider.network.chainId;
@@ -46,14 +39,14 @@ export class StealthBroadcastor {
     const stealthHash = getStealthHash();
     const workData = jobContract.interface.encodeFunctionData(workMethod, [...workArguments]);
 
-    if(this.doStaticCall){
+    if (this.doStaticCall) {
       try {
         await this.stealthRelayer.callStatic.execute(jobContract.address, workData, stealthHash, block.number);
       } catch (error: unknown) {
         if (error instanceof Error) {
           throw new TypeError(`Static call failed with ${error.message}`);
         }
-  
+
         throw error;
       }
     }

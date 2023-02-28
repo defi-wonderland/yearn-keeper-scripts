@@ -1,13 +1,13 @@
-import type { providers, Contract } from 'ethers';
-import { Block } from '@ethersproject/abstract-provider';
-import { getStrategies } from './batch-requests';
-import { BlockListener } from '@keep3r-network/keeper-scripting-utils';
+import type {providers, Contract} from 'ethers';
+import type {Block} from '@ethersproject/abstract-provider';
+import {BlockListener} from '@keep3r-network/keeper-scripting-utils';
+import {getStrategies} from './batch-requests';
 
 export async function testV2Keep3rRun(
   jobContract: Contract,
   provider: providers.WebSocketProvider | providers.JsonRpcProvider,
   workFunction: string,
-  broadcastMethod: (job: Contract, workMethod: string, workArguments: any[], block: Block) => Promise<void>
+  broadcastMethod: (job: Contract, workMethod: string, workArguments: any[], block: Block) => Promise<void>,
 ) {
   const blockListener = new BlockListener(provider);
 
@@ -17,6 +17,7 @@ export async function testV2Keep3rRun(
     if (workableStrategies.length === 0) {
       console.info('Found no workable strategies.');
     }
+
     for (const [_, strategy] of workableStrategies.entries()) {
       try {
         await broadcastMethod(jobContract, workFunction, [strategy], block);
