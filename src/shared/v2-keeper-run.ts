@@ -12,7 +12,8 @@ export async function testV2Keep3rRun(
   const blockListener = new BlockListener(provider);
 
   blockListener.stream(async (block: Block) => {
-    const workableStrategies = await getStrategies(jobContract);
+    const allStrategies = await jobContract.strategies();
+    const workableStrategies = await getStrategies(jobContract, allStrategies);
     if (workableStrategies.length === 0) {
       console.info('Found no workable strategies.');
     }

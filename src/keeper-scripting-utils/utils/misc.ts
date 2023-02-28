@@ -1,12 +1,11 @@
-import {config} from 'dotenv'
-import type {UnsubscribeFunction} from '@keep3r-network/keeper-scripting-utils';
-import type {TransactionRequest, Block} from '@ethersproject/abstract-provider';
-import type {Contract, Overrides, PopulatedTransaction} from 'ethers';
-import {BigNumber, ethers} from 'ethers';
-import type {FlashbotsBundleTransaction} from '@flashbots/ethers-provider-bundle';
-import {FlashbotsBundleProvider, FlashbotsPrivateTransactionResponse} from '@flashbots/ethers-provider-bundle';
-import * as BatchWorkable from '../../../solidity/artifacts/contracts/BatchWorkable.sol/BatchWorkable.json';
-import type {Address} from './types';
+import { config } from 'dotenv';
+import type { UnsubscribeFunction } from '@keep3r-network/keeper-scripting-utils';
+import type { TransactionRequest, Block } from '@ethersproject/abstract-provider';
+import type { Contract, Overrides, PopulatedTransaction } from 'ethers';
+import { BigNumber } from 'ethers';
+import type { FlashbotsBundleTransaction } from '@flashbots/ethers-provider-bundle';
+import { FlashbotsBundleProvider } from '@flashbots/ethers-provider-bundle';
+import type { Address } from './types';
 
 config();
 
@@ -30,7 +29,7 @@ export async function populateTx(
   functionName: string,
   functionArgs: any[],
   options: Overrides,
-  chainId: number,
+  chainId: number
 ): Promise<TransactionRequest> {
   const populatedTx: PopulatedTransaction = await contract.populateTransaction[functionName](...functionArgs, {
     ...options,
@@ -47,7 +46,7 @@ export async function populateTx(
 export async function sendAndHandleResponse(
   flashbotsProvider: FlashbotsBundleProvider,
   privateTx: FlashbotsBundleTransaction,
-  maxBlockNumber?: number,
+  maxBlockNumber?: number
 ) {
   try {
     const response = await flashbotsProvider.sendPrivateTransaction(privateTx, {
