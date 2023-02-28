@@ -1,10 +1,11 @@
-import { Event, providers, Contract } from 'ethers';
-import { Block } from '@ethersproject/abstract-provider';
-import { defaultAbiCoder } from 'ethers/lib/utils';
+import type {Event, providers} from 'ethers';
+import {Contract} from 'ethers';
+import type {Block} from '@ethersproject/abstract-provider';
+import {defaultAbiCoder} from 'ethers/lib/utils';
+import {BlockListener} from '@keep3r-network/keeper-scripting-utils';
 import VaultFactoryABI from '../../abis/VaultFactory.json';
 
-import { getStrategies } from './batch-requests';
-import { BlockListener } from '@keep3r-network/keeper-scripting-utils';
+import {getStrategies} from './batch-requests';
 
 const VAULT_FACTORY_ADDRESS = '0x21b1FC8A52f179757bf555346130bF27c0C2A17A';
 const VAULT_FACTORY_DEPLOYMENT_BLOCK = '0xF76E83';
@@ -26,7 +27,7 @@ export async function publicKeeperRun(
   jobContract: Contract,
   provider: providers.WebSocketProvider | providers.JsonRpcProvider,
   workFunction: string,
-  broadcastMethod: (job: Contract, workMethod: string, workArguments: any[], block: Block) => Promise<void>
+  broadcastMethod: (job: Contract, workMethod: string, workArguments: any[], block: Block) => Promise<void>,
 ): Promise<void> {
   const vaultFactory = new Contract(VAULT_FACTORY_ADDRESS, VaultFactoryABI, provider);
 
@@ -73,30 +74,30 @@ export async function publicKeeperRun(
   const allRemovedStrategies = new Set(strategyRevoked.concat(strategyMigratedFrom).concat(strategyRemovedFromQueue));
   const currentStrategies = allAddedStrategies.filter((x) => !allRemovedStrategies.has(x)).map((x) => '0x'.concat(x.slice(26, 256)));
 
-  blockListener.stream(async (block: Block) => {
+  const blockSubscription = blockListener.stream(async (block: Block) => {
     const workableStrategies = await getStrategies(jobContract, currentStrategies);
 
     for (const strategy of workableStrategies) {
-      broadcastMethod(jobContract, workFunction, [strategy], block);
+      await broadcastMethod(jobContract, workFunction, [strategy], block);
     }
   });
 
   // Listens if a new strategy is added to the job. If it is, then try to work it.
-  provider.on({ topics: [TOPIC_STRATEGY_ADDED] }, async (eventData) => {
+  provider.on({topics: [TOPIC_STRATEGY_ADDED]}, async (eventData) => {
     const strategy = defaultAbiCoder.decode(['address', 'uint256', 'uint256', 'uint256', 'uint256'], eventData.data)[0] as string;
     console.log('^^^^^^^^^^^^^^^^^ NEW STRATEGY ADDED TO JOB ^^^^^^^^^^^^^^^^^', strategy);
 
     addStrategy(currentStrategies, strategy);
   });
 
-  provider.on({ topics: [TOPIC_STRATEGY_ADDED_TO_QUEUE] }, async (eventData) => {
+  provider.on({topics: [TOPIC_STRATEGY_ADDED_TO_QUEUE]}, async (eventData) => {
     const strategy = defaultAbiCoder.decode(['address'], eventData.data)[0] as string;
     console.log('^^^^^^^^^^^^^^^^^ NEW STRATEGY ADDED TO JOB ^^^^^^^^^^^^^^^^^', strategy);
 
     addStrategy(currentStrategies, strategy);
   });
 
-  provider.on({ topics: [TOPIC_STRATEGY_MIGRATED] }, async (eventData) => {
+  provider.on({topics: [TOPIC_STRATEGY_MIGRATED]}, async (eventData) => {
     const [strategyRemoved, strategyAdded] = defaultAbiCoder.decode(['address', 'address'], eventData.data) as string[];
     console.log('^^^^^^^^^^^^^^^^^ STRATEGY REMOVED FROM JOB ^^^^^^^^^^^^^^^^^', strategyRemoved);
 
@@ -107,23 +108,24 @@ export async function publicKeeperRun(
     addStrategy(currentStrategies, strategyAdded);
   });
 
-  provider.on({ topics: [TOPIC_STRATEGY_REMOVED_FROM_QUEUE] }, async (eventData) => {
+  provider.on({topics: [TOPIC_STRATEGY_REMOVED_FROM_QUEUE]}, async (eventData) => {
     const strategy = defaultAbiCoder.decode(['address'], eventData.data)[0] as string;
     console.log('^^^^^^^^^^^^^^^^^ STRATEGY REMOVED FROM JOB ^^^^^^^^^^^^^^^^^', strategy);
 
     removeStrategy(currentStrategies, strategy);
   });
 
-  provider.on({ topics: [TOPIC_STRATEGY_REVOKED] }, (eventData) => {
+  provider.on({topics: [TOPIC_STRATEGY_REVOKED]}, (eventData) => {
     const strategy = defaultAbiCoder.decode(['address'], eventData.data)[0] as string;
     console.log('^^^^^^^^^^^^^^^^^ STRATEGY REMOVED FROM JOB ^^^^^^^^^^^^^^^^^', strategy);
 
     removeStrategy(currentStrategies, strategy);
   });
 
-  provider.on(vaultFactory.filters.NewAutomatedVault(), () => {
+  provider.on(vaultFactory.filters.NewAutomatedVault(), async () => {
     // When a new vault is deployed, the script resets and re loads the strategies to work
-    process.exit();
+    blockSubscription();
+    await publicKeeperRun(jobContract, provider, workFunction, broadcastMethod);
   });
 }
 

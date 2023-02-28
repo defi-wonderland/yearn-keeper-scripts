@@ -24,8 +24,9 @@
     "start:test-run": "ts-node src/test-run.ts",
     "compile-contracts": "cd solidity && yarn && yarn hardhat compile && cd ..",
     "build": "yarn run compile-contracts && eth-sdk && tsc",
-    "prod:harvest-v2": "node dist/src/harvest-v2.js",
-    "prod:tend-keep3r-v2": "node dist/src/tend-keep3r-v2.js",
+    "prod:harvest-v2": "node dist/src/harvest-v2-keep3r-v2.js",
+    "prod:tend-keep3r-v2": "node dist/src/tend-v2-keep3r-v2.js",
+    "prod:public": "node dist/src/public-keeper-job.js",
     "lint": "xo",
     "lint:fix": "xo --fix"
   },
@@ -57,13 +58,16 @@
       "unicorn/no-new-array": "warn",
       "import/extensions": 0,
       "new-cap": 0,
+      "import/no-unassigned-import": "warn",
+      "no-await-in-loop": "warn",
+      "n/prefer-global/process": "warn",
       "unicorn/filename-case": "warn",
       "@typescript-eslint/no-unsafe-assignment": 0,
       "@typescript-eslint/no-dynamic-delete": "warn",
       "@typescript-eslint/no-unsafe-call": "warn",
       "@typescript-eslint/no-unsafe-return": "warn",
       "@typescript-eslint/naming-convention": [
-        "error",
+        "warn",
         {
           "selector": "variable",
           "format": [

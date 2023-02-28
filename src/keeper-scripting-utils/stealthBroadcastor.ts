@@ -1,59 +1,46 @@
 import {getStealthHash} from '@keep3r-network/keeper-scripting-utils';
 import type {TransactionRequest, Block} from '@ethersproject/abstract-provider';
 import type {Wallet, Overrides, Contract} from 'ethers';
-import type {FlashbotsBundleTransaction} from '@flashbots/ethers-provider-bundle';
-import {FlashbotsBundleProvider} from '@flashbots/ethers-provider-bundle';
+import type {FlashbotsBundleTransaction, FlashbotsBundleProvider} from '@flashbots/ethers-provider-bundle';
 import {calculateTargetBlocks, getMainnetGasType2Parameters, populateTx, sendAndHandleResponse} from './utils/misc';
 
 /**
  * @notice Creates and populate a transaction for work in a determinated job using flashbots
  *
- * @param provider			The provider which can be Json or Wss
- * @param flashbots			The flashbot that will send the bundle
- * @param burstSize 		The amount of transactions for future blocks to be broadcast each time
- * @param futureBlocks		The amount of future blocks.
- * @param priorityFeeInWei 	The priority fee in wei
- * @param gasLimit			The gas limit determines the maximum gas that can be spent in the transaction
+ * @param flashbotsProvider The flashbots provider. It contains a JSON or WSS provider
+ * @param flashbots			    The flashbot that will send the bundle
+ * @param burstSize 		    The amount of transactions for future blocks to be broadcast each time
+ * @param priorityFeeInWei  The priority fee in wei
+ * @param gasLimit			    The gas limit determines the maximum gas that can be spent in the transaction
+ * @param doStaticCall		  Flag to determinate whether to perform a callStatic to work or not. Defaults to true.
  *
  */
 export class StealthBroadcastor {
-  public flashbotsProvider: FlashbotsBundleProvider;
   public chainId: number;
-  public stealthRelayer: Contract;
-  public priorityFeeInGwei: number;
-  public gasLimit: number;
-  public burstSize: number;
-  public doStaticCall: boolean;
 
   constructor(
-    flashbotsProvider: FlashbotsBundleProvider,
-    stealthRelayer: Contract,
-    priorityFeeInGwei: number,
-    gasLimit: number,
-    burstSize: number,
-    doStaticCall: boolean = true
+    public flashbotsProvider: FlashbotsBundleProvider,
+    public stealthRelayer: Contract,
+    public priorityFeeInWei: number,
+    public gasLimit: number,
+    public burstSize: number,
+    public doStaticCall = true,
   ) {
-    this.flashbotsProvider = flashbotsProvider;
     this.chainId = flashbotsProvider.network.chainId;
-    this.priorityFeeInGwei = priorityFeeInGwei;
-    this.gasLimit = gasLimit;
-    this.stealthRelayer = stealthRelayer;
-    this.burstSize = burstSize;
-    this.doStaticCall = doStaticCall;
   }
 
   async tryToWorkOnStealthRelayer(jobContract: Contract, workMethod: string, workArguments: any[], block: Block) {
     const stealthHash = getStealthHash();
     const workData = jobContract.interface.encodeFunctionData(workMethod, [...workArguments]);
 
-    if(this.doStaticCall){
+    if (this.doStaticCall) {
       try {
         await this.stealthRelayer.callStatic.execute(jobContract.address, workData, stealthHash, block.number);
       } catch (error: unknown) {
         if (error instanceof Error) {
           throw new TypeError(`Static call failed with ${error.message}`);
         }
-  
+
         throw error;
       }
     }
@@ -64,7 +51,7 @@ export class StealthBroadcastor {
 
     const targetBlocks = calculateTargetBlocks(this.burstSize, nextBlock);
 
-    const {priorityFee, maxFeePerGas} = getMainnetGasType2Parameters(block, this.priorityFeeInGwei, this.burstSize);
+    const {priorityFee, maxFeePerGas} = getMainnetGasType2Parameters(block, this.priorityFeeInWei, this.burstSize);
 
     const txSigner = jobContract.signer as Wallet;
 

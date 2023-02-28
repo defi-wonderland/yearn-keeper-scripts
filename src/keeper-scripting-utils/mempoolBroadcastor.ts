@@ -5,21 +5,14 @@ import type {providers, Overrides, Contract} from 'ethers';
 /**
  * @notice Creates and populate a transaction for work in a determinated job using mempool
  *
- * @param provider			The provider which can be Json or Wss
- * @param gasLimit			The gas limit determines the maximum gas that can be spent in the transaction
+ * @param provider		 The provider which can be Json or Wss
+ * @param gasLimit		 The gas limit determines the maximum gas that can be spent in the transaction
+ * @param doStaticCall Flag to determinate whether to perform a callStatic to work or not. Defaults to true.
+ *
  *
  */
 export class MempoolBroadcastor {
-  public provider: providers.JsonRpcProvider | providers.WebSocketProvider;
-  public gasLimit: number;
-  public doStaticCall: boolean;
-
-  // TODO: add doStaticCall to other broadcastors (KMC-206)
-  constructor(provider: providers.JsonRpcProvider | providers.WebSocketProvider, gasLimit: number, doStaticCall = true) {
-    this.provider = provider;
-    this.gasLimit = gasLimit;
-    this.doStaticCall = doStaticCall;
-  }
+  constructor(public provider: providers.JsonRpcProvider | providers.WebSocketProvider, public gasLimit: number, public doStaticCall = true) {}
 
   /**
    *
@@ -29,7 +22,7 @@ export class MempoolBroadcastor {
    * @param block
    */
   tryToWorkOnMempool = async (jobContract: Contract, workMethod: string, methodArguments: Array<number | string>, block: Block) => {
-    const gasFees = await block.baseFeePerGas!;
+    const gasFees = block.baseFeePerGas!;
 
     // Create an object containing the fields we would like to add to our transaction.
     const options: Overrides = {
