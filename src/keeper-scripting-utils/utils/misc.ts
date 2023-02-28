@@ -15,14 +15,6 @@ export function getEnvVariable(name: string): string {
   return value;
 }
 
-// TODO: move to setup or delete completely?
-export function stopSubscription(storage: Record<string, UnsubscribeFunction>, strategy: Address): void {
-  if (storage[strategy]) {
-    storage[strategy]();
-    delete storage[strategy];
-  }
-}
-
 export async function populateTx(
   contract: Contract,
   functionName: string,
@@ -94,13 +86,13 @@ export type GasType2Parameters = {
   maxFeePerGas: BigNumber;
 };
 
-export function getGasParametersNextBlock(block: Block, priorityFeeInGwei: number): GasType2Parameters {
+export function getGasParametersNextBlock(block: Block, priorityFeeInWei: number): GasType2Parameters {
   if (!block.baseFeePerGas) {
     throw new Error('Missing property baseFeePerGas on block');
   }
 
   const maxBaseFee = FlashbotsBundleProvider.getBaseFeeInNextBlock(block.baseFeePerGas, block.gasUsed, block.gasLimit);
-  const priorityFee = BigNumber.from(priorityFeeInGwei);
+  const priorityFee = BigNumber.from(priorityFeeInWei);
   const maxFeePerGas = maxBaseFee.add(priorityFee);
   return {
     priorityFee,
@@ -108,18 +100,18 @@ export function getGasParametersNextBlock(block: Block, priorityFeeInGwei: numbe
   };
 }
 
-export function getMainnetGasType2Parameters(block: Block, priorityFeeInGwei: number, burstSize: number): GasType2Parameters {
+export function getMainnetGasType2Parameters(block: Block, priorityFeeInWei: number, burstSize: number): GasType2Parameters {
   if (!block.baseFeePerGas) {
     throw new Error('Missing property baseFeePerGas on block');
   }
 
   if (burstSize === 0 || burstSize === 1) {
-    return getGasParametersNextBlock(block, priorityFeeInGwei);
+    return getGasParametersNextBlock(block, priorityFeeInWei);
   }
 
   const maxBaseFee = FlashbotsBundleProvider.getMaxBaseFeeInFutureBlock(block.baseFeePerGas, burstSize);
 
-  const priorityFee = BigNumber.from(priorityFeeInGwei);
+  const priorityFee = BigNumber.from(priorityFeeInWei);
   const maxFeePerGas = maxBaseFee.add(priorityFee);
   return {
     priorityFee,

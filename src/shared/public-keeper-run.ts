@@ -74,7 +74,7 @@ export async function publicKeeperRun(
   const allRemovedStrategies = new Set(strategyRevoked.concat(strategyMigratedFrom).concat(strategyRemovedFromQueue));
   const currentStrategies = allAddedStrategies.filter((x) => !allRemovedStrategies.has(x)).map((x) => '0x'.concat(x.slice(26, 256)));
 
-  const blockSub = blockListener.stream(async (block: Block) => {
+  const blockSubscription = blockListener.stream(async (block: Block) => {
     const workableStrategies = await getStrategies(jobContract, currentStrategies);
 
     for (const strategy of workableStrategies) {
@@ -124,7 +124,7 @@ export async function publicKeeperRun(
 
   provider.on(vaultFactory.filters.NewAutomatedVault(), async () => {
     // When a new vault is deployed, the script resets and re loads the strategies to work
-    blockSub();
+    blockSubscription();
     await publicKeeperRun(jobContract, provider, workFunction, broadcastMethod);
   });
 }

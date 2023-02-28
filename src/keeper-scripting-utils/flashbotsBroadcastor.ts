@@ -6,9 +6,10 @@ import {getGasParametersNextBlock, populateTx, sendAndHandleResponse} from './ut
 /**
  * @notice Creates and populate a transaction for work in a determinated job using flashbots
  *
- * @param flashbotsProvider			The flashbot provider that will send the bundle
- * @param priorityFeeInGwei 	The priority fee in gwei
- * @param gasLimit			The gas limit determines the maximum gas that can be spent in the transaction
+ * @param flashbotsProvider The flashbot provider that will send the bundle
+ * @param priorityFeeInWei 	The priority fee in wei
+ * @param gasLimit			    The gas limit determines the maximum gas that can be spent in the transaction
+ * @param doStaticCall			Flag to determinate whether to perform a callStatic to work or not. Defaults to true.
  *
  */
 export class FlashbotsBroadcastor {
@@ -16,15 +17,11 @@ export class FlashbotsBroadcastor {
 
   constructor(
     public flashbotsProvider: FlashbotsBundleProvider,
-    public priorityFeeInGwei: number,
+    public priorityFeeInWei: number,
     public gasLimit: number,
     public doStaticCall = true,
   ) {
-    this.flashbotsProvider = flashbotsProvider;
     this.chainId = flashbotsProvider.network.chainId;
-    this.priorityFeeInGwei = priorityFeeInGwei;
-    this.gasLimit = gasLimit;
-    this.doStaticCall = doStaticCall;
   }
 
   async tryToWorkOnFlashbots(jobContract: Contract, workMethod: string, workArguments: any[], block: Block): Promise<void> {
@@ -36,7 +33,7 @@ export class FlashbotsBroadcastor {
       }
     }
 
-    const {priorityFee, maxFeePerGas} = getGasParametersNextBlock(block, this.priorityFeeInGwei);
+    const {priorityFee, maxFeePerGas} = getGasParametersNextBlock(block, this.priorityFeeInWei);
 
     const txSigner = jobContract.signer as Wallet;
 

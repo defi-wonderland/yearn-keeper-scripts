@@ -5,18 +5,14 @@ import type {providers, Overrides, Contract} from 'ethers';
 /**
  * @notice Creates and populate a transaction for work in a determinated job using mempool
  *
- * @param provider			The provider which can be Json or Wss
- * @param gasLimit			The gas limit determines the maximum gas that can be spent in the transaction
+ * @param provider		 The provider which can be Json or Wss
+ * @param gasLimit		 The gas limit determines the maximum gas that can be spent in the transaction
+ * @param doStaticCall Flag to determinate whether to perform a callStatic to work or not. Defaults to true.
+ *
  *
  */
 export class MempoolBroadcastor {
-  public doStaticCall: boolean;
-
-  constructor(public provider: providers.JsonRpcProvider | providers.WebSocketProvider, public gasLimit: number, doStaticCall = true) {
-    this.provider = provider;
-    this.gasLimit = gasLimit;
-    this.doStaticCall = doStaticCall;
-  }
+  constructor(public provider: providers.JsonRpcProvider | providers.WebSocketProvider, public gasLimit: number, public doStaticCall = true) {}
 
   /**
    *
