@@ -1,9 +1,8 @@
 import {getMainnetSdk} from '@dethcrypto/eth-sdk-client';
 import {providers, Wallet} from 'ethers';
 import {FlashbotsBundleProvider} from '@flashbots/ethers-provider-bundle';
+import {getEnvVariable, StealthBroadcastor} from '@keep3r-network/keeper-scripting-utils/';
 import {testV2Keep3rRun} from './shared/v2-keeper-run';
-import {StealthBroadcastor} from './keeper-scripting-utils/stealthBroadcastor';
-import {getEnvVariable} from './keeper-scripting-utils/utils/misc';
 
 // SETUP
 const WORK_FUNCTION = 'work';

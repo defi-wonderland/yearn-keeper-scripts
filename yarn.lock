@@ -1037,11 +1037,6 @@
     ts-node "^9.1.0"
     typescript "^4.1.2"
 
-"@flashbots/ethers-provider-bundle@^0.6.1":
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/@flashbots/ethers-provider-bundle/-/ethers-provider-bundle-0.6.1.tgz#30b0ff86d1b96e10c34f3dcba774b8908edb7f12"
-  integrity sha512-W7tSX832mi7XKlbg4dIMzV1HMw5Dg0ox0YOqPxW2nO2JqsAZwWYFrAk4nNZnsqRdexHiPF4JUYez/ELI5VpScA==
-
 "@humanwhocodes/config-array@^0.10.5":
   version "0.10.7"
   resolved "https://registry.yarnpkg.com/@humanwhocodes/config-array/-/config-array-0.10.7.tgz#6d53769fd0c222767e6452e8ebda825c22e9f0dc"
@@ -1096,10 +1091,10 @@
     rxjs "7.4.0"
     web3-utils "1.6.0"
 
-"@keep3r-network/keeper-scripting-utils@0.0.0-9b841d86":
-  version "0.0.0-9b841d86"
-  resolved "https://registry.yarnpkg.com/@keep3r-network/keeper-scripting-utils/-/keeper-scripting-utils-0.0.0-9b841d86.tgz#ce145fc93c197af69921fb8e6318c39ee793b91a"
-  integrity sha512-KgoZ4OJrQhUnEPJJtQFed6xzBZJbIhsgOlrorR5MPaYAC0b53IBSGeflCZhPfl2ycUflxNmyl1rJkhczuIvAmA==
+"@keep3r-network/keeper-scripting-utils@0.0.0-fd926f65":
+  version "0.0.0-fd926f65"
+  resolved "https://registry.yarnpkg.com/@keep3r-network/keeper-scripting-utils/-/keeper-scripting-utils-0.0.0-fd926f65.tgz#8e0ad668a68f3d6f409bdee8b452575d809dc92e"
+  integrity sha512-/ryMh2xLgnixIp4uDxEFv8JMGaRCDZubYPQoVFCQgZWIFfpMO2txIphPF6gnr7UirDHREK86aW33oH9kLnz+2w==
   dependencies:
     "@flashbots/ethers-provider-bundle" "0.5.0"
     "@keep3r-network/cli-utils" "1.0.0"
