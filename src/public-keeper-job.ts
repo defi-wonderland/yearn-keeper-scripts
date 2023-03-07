@@ -2,7 +2,7 @@ import {getMainnetSdk} from '@dethcrypto/eth-sdk-client';
 import {providers, Wallet} from 'ethers';
 import {FlashbotsBundleProvider} from '@flashbots/ethers-provider-bundle';
 import {FlashbotsBroadcastor, getEnvVariable} from '@keep3r-network/keeper-scripting-utils';
-import {testV2Keep3rRun} from './shared/v2-keeper-run';
+import {publicKeeperRun} from './shared/public-keeper-run';
 
 // SETUP
 const WORK_FUNCTION = 'work';
@@ -16,12 +16,13 @@ const PRIORITY_FEE = 1.5e9;
   const bundleSigner = new Wallet(getEnvVariable('BUNDLE_SIGNER_PRIVATE_KEY'), provider);
 
   // CONTRACTS
-  const tendJob = getMainnetSdk(txSigner).tendV2Keep3rV2;
+  const job = getMainnetSdk(txSigner).publicKeeperJob;
 
   // PROVIDERS
   const flashbotsProvider = await FlashbotsBundleProvider.create(provider, bundleSigner);
+
   const flashbotBroadcastor = new FlashbotsBroadcastor(flashbotsProvider, PRIORITY_FEE, GAS_LIMIT);
 
   // INITIALIZE
-  await testV2Keep3rRun(tendJob, provider, WORK_FUNCTION, flashbotBroadcastor.tryToWorkOnFlashbots.bind(flashbotBroadcastor));
+  await publicKeeperRun(job, provider, WORK_FUNCTION, flashbotBroadcastor.tryToWorkOnFlashbots.bind(flashbotBroadcastor));
 })();

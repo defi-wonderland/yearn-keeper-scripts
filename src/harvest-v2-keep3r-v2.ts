@@ -1,25 +1,29 @@
 import {getMainnetSdk} from '@dethcrypto/eth-sdk-client';
-import {Flashbots} from '@keep3r-network/keeper-scripting-utils';
-import {harvestRun} from './shared/harvest-run';
-import {tryToWorkHarvestStrategy} from './shared/harvest-work';
-import {loadInitialSetup} from './shared/setup';
-import {CHAIN_ID, FLASHBOTS_RPC} from './utils/constants';
+import {providers, Wallet} from 'ethers';
+import {FlashbotsBundleProvider} from '@flashbots/ethers-provider-bundle';
+import {getEnvVariable, StealthBroadcastor} from '@keep3r-network/keeper-scripting-utils/';
+import {testV2Keep3rRun} from './shared/v2-keeper-run';
+
+// SETUP
+const WORK_FUNCTION = 'work';
+const PRIORITY_FEE = 2e9;
+const GAS_LIMIT = 5_000_000;
+const BURST_SIZE = 2;
 
 (async () => {
-  const {provider, txSigner, bundleSigner} = loadInitialSetup();
+  // ENVIRONMENT
+  const provider = new providers.JsonRpcProvider(getEnvVariable('NODE_URI_MAINNET'));
+  const txSigner = new Wallet(getEnvVariable('TX_SIGNER_PRIVATE_KEY'), provider);
+  const bundleSigner = new Wallet(getEnvVariable('BUNDLE_SIGNER_PRIVATE_KEY'), provider);
 
+  // CONTRACTS
   const harvestJob = getMainnetSdk(txSigner).harvestV2Keep3rV2;
   const stealthRelayer = getMainnetSdk(txSigner).stealthRelayer;
 
-  // One time setup
-  const flashbots = await Flashbots.init(txSigner, bundleSigner, provider, [FLASHBOTS_RPC], true, CHAIN_ID);
+  // PROVIDERS
+  const flashbotsProvider = await FlashbotsBundleProvider.create(provider, bundleSigner);
+  const rpcStealthBroacastor = new StealthBroadcastor(flashbotsProvider, stealthRelayer, PRIORITY_FEE, GAS_LIMIT, BURST_SIZE);
 
-  await harvestRun({
-    flashbots,
-    provider,
-    job: harvestJob,
-    stealthRelayer,
-    txSigner,
-    tryToWorkFunc: tryToWorkHarvestStrategy,
-  });
+  // INITIALIZE
+  await testV2Keep3rRun(harvestJob, provider, WORK_FUNCTION, rpcStealthBroacastor.tryToWorkOnStealthRelayer.bind(rpcStealthBroacastor));
 })();
