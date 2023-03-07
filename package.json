@@ -13,7 +13,8 @@
   "contributors": [
     "0xng (https://github.com/0xng)",
     "gotzenx (https://github.com/gotzenx)",
-    "0xGorilla (https://github.com/0xGorilla)"
+    "0xGorilla (https://github.com/0xGorilla)",
+    "wei3erHase (https://github.com/wei3erHase)"
   ],
   "private": true,
   "scripts": {
@@ -21,7 +22,6 @@
     "start:harvest": "ts-node src/harvest-v2-keep3r-v2.ts",
     "start:tend": "ts-node src/tend-v2-keep3r-v2.ts",
     "start:public": "ts-node src/public-keeper-job.ts",
-    "start:test-run": "ts-node src/test-run.ts",
     "compile-contracts": "cd solidity && yarn && yarn hardhat compile && cd ..",
     "build": "yarn run compile-contracts && eth-sdk && tsc",
     "prod:harvest-v2": "node dist/src/harvest-v2-keep3r-v2.js",
@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@flashbots/ethers-provider-bundle": "0.5.0",
-    "@keep3r-network/keeper-scripting-utils": "0.0.0-fd926f65",
+    "@keep3r-network/keeper-scripting-utils": "0.0.0-70ea0518",
     "dotenv": "16.0.3",
     "ethers": "5.6.9",
     "lodash.isequal": "4.5.0",

@@ -2,6 +2,7 @@ import type {Event, providers} from 'ethers';
 import {Contract} from 'ethers';
 import type {Block} from '@ethersproject/abstract-provider';
 import {defaultAbiCoder} from 'ethers/lib/utils';
+import type {BroadcastorProps} from '@keep3r-network/keeper-scripting-utils';
 import {BlockListener} from '@keep3r-network/keeper-scripting-utils';
 import VaultFactoryABI from '../../abis/VaultFactory.json';
 
@@ -26,8 +27,8 @@ const TOPICS = [
 export async function publicKeeperRun(
   jobContract: Contract,
   provider: providers.WebSocketProvider | providers.JsonRpcProvider,
-  workFunction: string,
-  broadcastMethod: (job: Contract, workMethod: string, workArguments: any[], block: Block) => Promise<void>,
+  workMethod: string,
+  broadcastMethod: (props: BroadcastorProps) => Promise<void>,
 ): Promise<void> {
   const vaultFactory = new Contract(VAULT_FACTORY_ADDRESS, VaultFactoryABI, provider);
 
@@ -78,7 +79,7 @@ export async function publicKeeperRun(
     const workableStrategies = await getStrategies(jobContract, currentStrategies);
 
     for (const strategy of workableStrategies) {
-      await broadcastMethod(jobContract, workFunction, [strategy], block);
+      await broadcastMethod({jobContract, workMethod, workArguments: [strategy], block});
     }
   });
 
@@ -125,7 +126,7 @@ export async function publicKeeperRun(
   provider.on(vaultFactory.filters.NewAutomatedVault(), async () => {
     // When a new vault is deployed, the script resets and re loads the strategies to work
     blockSubscription();
-    await publicKeeperRun(jobContract, provider, workFunction, broadcastMethod);
+    await publicKeeperRun(jobContract, provider, workMethod, broadcastMethod);
   });
 }
 
