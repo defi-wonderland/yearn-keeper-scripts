@@ -11,7 +11,7 @@ const PRIORITY_FEE = 1.5e9;
 
 (async () => {
   // ENVIRONMENT
-  const provider = new providers.JsonRpcProvider(getEnvVariable('NODE_URI_MAINNET'));
+  const provider = new providers.JsonRpcProvider(getEnvVariable('RPC_HTTP_MAINNET_URI'));
   const txSigner = new Wallet(getEnvVariable('TX_SIGNER_PRIVATE_KEY'), provider);
   const bundleSigner = new Wallet(getEnvVariable('BUNDLE_SIGNER_PRIVATE_KEY'), provider);
 
