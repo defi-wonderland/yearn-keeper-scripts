@@ -24,7 +24,7 @@ const TOPICS = [
   TOPIC_STRATEGY_REVOKED,
 ];
 
-export async function publicKeeperRun(
+export async function factoryHarvestV1Run(
   jobContract: Contract,
   provider: providers.WebSocketProvider | providers.JsonRpcProvider,
   workMethod: string,
@@ -126,7 +126,7 @@ export async function publicKeeperRun(
   provider.on(vaultFactory.filters.NewAutomatedVault(), async () => {
     // When a new vault is deployed, the script resets and re loads the strategies to work
     blockSubscription();
-    await publicKeeperRun(jobContract, provider, workMethod, broadcastMethod);
+    await factoryHarvestV1Run(jobContract, provider, workMethod, broadcastMethod);
   });
 }
 

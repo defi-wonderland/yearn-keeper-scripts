@@ -2,7 +2,7 @@ import {getMainnetSdk} from '@dethcrypto/eth-sdk-client';
 import {providers, Wallet} from 'ethers';
 import {FlashbotsBundleProvider} from '@flashbots/ethers-provider-bundle';
 import {FlashbotsBroadcastor, getEnvVariable} from '@keep3r-network/keeper-scripting-utils';
-import {publicKeeperRun} from './shared/public-keeper-run';
+import {factoryHarvestV1Run} from './shared/factory-harvest-v1-run';
 
 // SETUP
 const WORK_FUNCTION = 'work';
@@ -24,5 +24,5 @@ const PRIORITY_FEE = 1.5e9;
   const flashbotBroadcastor = new FlashbotsBroadcastor(flashbotsProvider, PRIORITY_FEE, GAS_LIMIT);
 
   // INITIALIZE
-  await publicKeeperRun(job, provider, WORK_FUNCTION, flashbotBroadcastor.tryToWorkOnFlashbots.bind(flashbotBroadcastor));
+  await factoryHarvestV1Run(job, provider, WORK_FUNCTION, flashbotBroadcastor.tryToWorkOnFlashbots.bind(flashbotBroadcastor));
 })();
