@@ -11,8 +11,5 @@ export default defineConfig({
       // vaultFactory: '0x21b1FC8A52f179757bf555346130bF27c0C2A17A',
       // vaultChild: '0x5B8C556B8b2a78696F0B9B830B3d67623122E270'
     },
-    goerli: {
-      testFakeStrategiesJob: '0xbA3ae0D23D3CFb74d829615b304F02C366e75d5E',
-    },
   },
 });
