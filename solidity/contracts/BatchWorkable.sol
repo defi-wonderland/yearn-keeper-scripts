@@ -16,12 +16,15 @@ contract BatchWorkable {
       uint256 _workableStrategyCounter;
      
       for (uint256 _i; _i < _strategiesLength;) {
-        if (_strategyAggregator.workable(_strategies[_i])) {
-          // if a strategy is workable, add it to _tempStrategiesHolder
-          _tempStrategiesHolder[_workableStrategyCounter] = _strategies[_i];
-          // only increase the counter when we find a workable strategy, so that index always increases by 1 starting from 0
-          ++_workableStrategyCounter;
-        }
+        try _strategyAggregator.workable(_strategies[_i]) returns (bool _isWorkable) {
+          if (_isWorkable) {
+            // if a strategy is workable, add it to _tempStrategiesHolder
+            _tempStrategiesHolder[_workableStrategyCounter] = _strategies[_i];
+            // only increase the counter when we find a workable strategy, so that index always increases by 1 starting from 0
+            ++_workableStrategyCounter;
+          }
+        } catch {}
+
         unchecked {++_i;}
       }
     
