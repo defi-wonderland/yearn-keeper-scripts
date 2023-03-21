@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@flashbots/ethers-provider-bundle": "0.5.0",
-    "@keep3r-network/keeper-scripting-utils": "1.0.0",
+    "@keep3r-network/keeper-scripting-utils": "0.0.0-bcd23fa4",
     "dotenv": "16.0.3",
     "ethers": "5.6.9",
     "lodash.isequal": "4.5.0",

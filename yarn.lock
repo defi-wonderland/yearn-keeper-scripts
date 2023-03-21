@@ -718,10 +718,10 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@keep3r-network/keeper-scripting-utils@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@keep3r-network/keeper-scripting-utils/-/keeper-scripting-utils-1.0.0.tgz#a2f722aae2f5d4564b4c4f332cbd56cabbfe4db2"
-  integrity sha512-UEBY4qMrM1ghqmBJfYUoKRiJoksMmqHBLsMYz5XmyVPdX1MZ7AMgslLu9PS5pgrUvRIWmHk4mFH3ZWFnYDeHwQ==
+"@keep3r-network/keeper-scripting-utils@0.0.0-bcd23fa4":
+  version "0.0.0-bcd23fa4"
+  resolved "https://registry.yarnpkg.com/@keep3r-network/keeper-scripting-utils/-/keeper-scripting-utils-0.0.0-bcd23fa4.tgz#41cb04da788954f929a5e732d777351ea445c6ad"
+  integrity sha512-abCKqhOkjX6nxlYS8on03ddypBuIhNPbKb43EtIxbSBAF6Bbk/jeu/zZ23yWDIWNZVXBJWDl3PskpdaC3msS6Q==
   dependencies:
     "@flashbots/ethers-provider-bundle" "0.5.0"
     chalk "4.1.1"
