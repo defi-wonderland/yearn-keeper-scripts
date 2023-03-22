@@ -11,7 +11,8 @@ const PRIORITY_FEE = 1.5e9;
 
 (async () => {
   // ENVIRONMENT
-  const provider = new providers.JsonRpcProvider(getEnvVariable('RPC_HTTP_MAINNET_URI_FOR_LOGS'));
+  const provider = new providers.JsonRpcProvider(getEnvVariable('RPC_HTTP_MAINNET_URI'));
+  const providerForLogs = new providers.JsonRpcProvider(getEnvVariable('RPC_HTTP_MAINNET_URI_FOR_LOGS'));
   const txSigner = new Wallet(getEnvVariable('TX_SIGNER_PRIVATE_KEY'), provider);
   const bundleSigner = new Wallet(getEnvVariable('BUNDLE_SIGNER_PRIVATE_KEY'), provider);
 
@@ -24,5 +25,5 @@ const PRIORITY_FEE = 1.5e9;
   const flashbotBroadcastor = new FlashbotsBroadcastor(flashbotsProvider, PRIORITY_FEE, GAS_LIMIT);
 
   // INITIALIZE
-  await factoryHarvestV1Run(job, provider, WORK_FUNCTION, flashbotBroadcastor.tryToWorkOnFlashbots.bind(flashbotBroadcastor));
+  await factoryHarvestV1Run(job, provider, providerForLogs, WORK_FUNCTION, flashbotBroadcastor.tryToWorkOnFlashbots.bind(flashbotBroadcastor));
 })();

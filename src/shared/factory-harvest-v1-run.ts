@@ -27,6 +27,7 @@ const TOPICS = [
 export async function factoryHarvestV1Run(
   jobContract: Contract,
   provider: providers.WebSocketProvider | providers.JsonRpcProvider,
+  providerForLogs: providers.WebSocketProvider | providers.JsonRpcProvider,
   workMethod: string,
   broadcastMethod: (props: BroadcastorProps) => Promise<void>,
 ): Promise<void> {
@@ -42,7 +43,7 @@ export async function factoryHarvestV1Run(
       topics: [topic],
       fromBlock: VAULT_FACTORY_DEPLOYMENT_BLOCK,
     };
-    logsByTopic[topic] = await provider.send('eth_getLogs', [filter]);
+    logsByTopic[topic] = await providerForLogs.send('eth_getLogs', [filter]);
   }
 
   const strategyAdded = logsByTopic[TOPIC_STRATEGY_ADDED].map((event) => {
@@ -126,7 +127,7 @@ export async function factoryHarvestV1Run(
   provider.on(vaultFactory.filters.NewAutomatedVault(), async () => {
     // When a new vault is deployed, the script resets and re loads the strategies to work
     blockListener.stop();
-    await factoryHarvestV1Run(jobContract, provider, workMethod, broadcastMethod);
+    await factoryHarvestV1Run(jobContract, provider, providerForLogs, workMethod, broadcastMethod);
   });
 }
 
