@@ -80,11 +80,12 @@ export async function factoryHarvestV1Run(
   provider.on({topics: [TOPIC_STRATEGY_REVOKED]}, (eventData) => {
     const strategy = defaultAbiCoder.decode(['address'], eventData.data)[0] as string;
     console.log('^^^^^^^^^^^^^^^^^ STRATEGY REMOVED FROM JOB ^^^^^^^^^^^^^^^^^', strategy);
-
+    
     removeStrategy(currentStrategies, strategy);
   });
-
+  
   provider.on(vaultFactory.filters.NewAutomatedVault(), async () => {
+    console.log('^^^^^^^^^^^^^^^^^ NEW AUTOMATED VAULT ^^^^^^^^^^^^^^^^^');
     // When a new vault is deployed, reload the strategies to work
     currentStrategies = await getCurrentStrategies(vaultFactory, providerForLogs);
   });
@@ -108,6 +109,7 @@ async function getCurrentStrategies(
   providerForLogs: providers.WebSocketProvider | providers.JsonRpcProvider,
 ): Promise<string[]> {
   const allVaults: string[] = await vaultFactory.allDeployedVaults();
+  console.log(`Fetching current strategies from ${allVaults.length} vaults`);
 
   const logsByTopic: Record<string, Event[]> = {};
   for (const topic of TOPICS) {
@@ -129,6 +131,8 @@ async function getCurrentStrategies(
   const allAddedStrategies = strategyAdded.concat(strategyMigratedTo).concat(strategyAddedToQueue);
   const allRemovedStrategies = new Set(strategyRevoked.concat(strategyMigratedFrom).concat(strategyRemovedFromQueue));
   const currentStrategies = allAddedStrategies.filter((x) => !allRemovedStrategies.has(x)).map((x) => '0x'.concat(x.slice(26, 256)));
+
+  console.log(`Found ${currentStrategies.length} strategies`);
 
   return currentStrategies;
 }
