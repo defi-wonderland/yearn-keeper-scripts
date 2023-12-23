@@ -80,10 +80,10 @@ export async function factoryHarvestV1Run(
   provider.on({topics: [TOPIC_STRATEGY_REVOKED]}, (eventData) => {
     const strategy = defaultAbiCoder.decode(['address'], eventData.data)[0] as string;
     console.log('^^^^^^^^^^^^^^^^^ STRATEGY REMOVED FROM JOB ^^^^^^^^^^^^^^^^^', strategy);
-    
+
     removeStrategy(currentStrategies, strategy);
   });
-  
+
   provider.on(vaultFactory.filters.NewAutomatedVault(), async () => {
     console.log('^^^^^^^^^^^^^^^^^ NEW AUTOMATED VAULT ^^^^^^^^^^^^^^^^^');
     // When a new vault is deployed, reload the strategies to work
@@ -121,12 +121,12 @@ async function getCurrentStrategies(
     logsByTopic[topic] = await providerForLogs.send('eth_getLogs', [filter]);
   }
 
-  const strategyAdded = logsByTopic[TOPIC_STRATEGY_ADDED].map(event => event.topics[1]);
-  const strategyAddedToQueue = logsByTopic[TOPIC_STRATEGY_ADDED_TO_QUEUE].map(event => event.topics[1]);
-  const strategyMigratedFrom = logsByTopic[TOPIC_STRATEGY_MIGRATED].map(event => event.topics[1]);
-  const strategyMigratedTo = logsByTopic[TOPIC_STRATEGY_MIGRATED].map(event => event.topics[2]);
-  const strategyRemovedFromQueue = logsByTopic[TOPIC_STRATEGY_REMOVED_FROM_QUEUE].map(event => event.topics[1]);
-  const strategyRevoked = logsByTopic[TOPIC_STRATEGY_REVOKED].map(event => event.topics[1]);
+  const strategyAdded = logsByTopic[TOPIC_STRATEGY_ADDED].map((event) => event.topics[1]);
+  const strategyAddedToQueue = logsByTopic[TOPIC_STRATEGY_ADDED_TO_QUEUE].map((event) => event.topics[1]);
+  const strategyMigratedFrom = logsByTopic[TOPIC_STRATEGY_MIGRATED].map((event) => event.topics[1]);
+  const strategyMigratedTo = logsByTopic[TOPIC_STRATEGY_MIGRATED].map((event) => event.topics[2]);
+  const strategyRemovedFromQueue = logsByTopic[TOPIC_STRATEGY_REMOVED_FROM_QUEUE].map((event) => event.topics[1]);
+  const strategyRevoked = logsByTopic[TOPIC_STRATEGY_REVOKED].map((event) => event.topics[1]);
 
   const allAddedStrategies = strategyAdded.concat(strategyMigratedTo).concat(strategyAddedToQueue);
   const allRemovedStrategies = new Set(strategyRevoked.concat(strategyMigratedFrom).concat(strategyRemovedFromQueue));
