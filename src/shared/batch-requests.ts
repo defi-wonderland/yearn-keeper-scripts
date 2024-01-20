@@ -5,7 +5,7 @@ import * as BatchWorkable from '../../solidity/artifacts/contracts/BatchWorkable
 export async function getStrategies(job: Contract, strategies: string[]): Promise<string[]> {
   let workableStrategies: string[] = [];
 
-  const batches = chunkArray(strategies, 150);
+  const batches = chunkArray(strategies, 80);
   for (const batch of batches) {
     const inputData = ethers.utils.defaultAbiCoder.encode(['address', 'address[]'], [job.address, batch]);
     const contractCreationCode = BatchWorkable.bytecode.concat(inputData.slice(2));
