@@ -4,7 +4,7 @@ import type {BroadcastorProps} from '@keep3r-network/keeper-scripting-utils';
 import {BlockListener} from '@keep3r-network/keeper-scripting-utils';
 import {getStrategies} from './batch-requests';
 
-export async function testV2Keep3rRun(
+export async function v2Keep3rRun(
   jobContract: Contract,
   provider: providers.WebSocketProvider | providers.JsonRpcProvider,
   workMethod: string,
