@@ -5,7 +5,7 @@ import {factoryHarvestV1Run} from './shared/factory-harvest-v1-run';
 
 // SETUP
 const WORK_FUNCTION = 'work';
-const GAS_LIMIT = 30_000_000;
+const GAS_LIMIT = 10_000_000;
 const PRIORITY_FEE = 2e9;
 const builders = ['https://rpc.titanbuilder.xyz/', 'https://rpc.beaverbuild.org/'];
 
