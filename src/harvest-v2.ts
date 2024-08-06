@@ -1,7 +1,7 @@
-import { getMainnetSdk } from '@dethcrypto/eth-sdk-client';
-import { providers, Wallet } from 'ethers';
-import { getEnvVariable, StealthBroadcastor } from '@keep3r-network/keeper-scripting-utils/';
-import { v2Keep3rRun } from './shared/v2-keeper-run';
+import {getMainnetSdk} from '@dethcrypto/eth-sdk-client';
+import {providers, Wallet} from 'ethers';
+import {getEnvVariable, StealthBroadcastor} from '@keep3r-network/keeper-scripting-utils/';
+import {v2Keep3rRun} from './shared/v2-keeper-run';
 
 // SETUP
 const WORK_FUNCTION = 'work';
