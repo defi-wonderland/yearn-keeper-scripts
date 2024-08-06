@@ -27,55 +27,16 @@ const TOPICS = [
 export async function factoryHarvestV1Run(
   jobContract: Contract,
   provider: providers.WebSocketProvider | providers.JsonRpcProvider,
+  providerForLogs: providers.WebSocketProvider | providers.JsonRpcProvider,
   workMethod: string,
   broadcastMethod: (props: BroadcastorProps) => Promise<void>,
 ): Promise<void> {
-  const vaultFactory = new Contract(VAULT_FACTORY_ADDRESS, VaultFactoryABI, provider);
-
-  const allVaults: string[] = await vaultFactory.allDeployedVaults();
-
-  const logsByTopic: Record<string, Event[]> = {};
-
-  for (const topic of TOPICS) {
-    const filter = {
-      address: allVaults,
-      topics: [topic],
-      fromBlock: VAULT_FACTORY_DEPLOYMENT_BLOCK,
-    };
-    logsByTopic[topic] = await provider.send('eth_getLogs', [filter]);
-  }
-
-  const strategyAdded = logsByTopic[TOPIC_STRATEGY_ADDED].map((event) => {
-    return event.topics[1];
-  });
-
-  const strategyAddedToQueue = logsByTopic[TOPIC_STRATEGY_ADDED_TO_QUEUE].map((event) => {
-    return event.topics[1];
-  });
-
-  const strategyMigratedFrom = logsByTopic[TOPIC_STRATEGY_MIGRATED].map((event) => {
-    return event.topics[1];
-  });
-
-  const strategyMigratedTo = logsByTopic[TOPIC_STRATEGY_MIGRATED].map((event) => {
-    return event.topics[2];
-  });
-
-  const strategyRemovedFromQueue = logsByTopic[TOPIC_STRATEGY_REMOVED_FROM_QUEUE].map((event) => {
-    return event.topics[1];
-  });
-
-  const strategyRevoked = logsByTopic[TOPIC_STRATEGY_REVOKED].map((event) => {
-    return event.topics[1];
-  });
-
   const blockListener = new BlockListener(provider);
 
-  const allAddedStrategies = strategyAdded.concat(strategyMigratedTo).concat(strategyAddedToQueue);
-  const allRemovedStrategies = new Set(strategyRevoked.concat(strategyMigratedFrom).concat(strategyRemovedFromQueue));
-  const currentStrategies = allAddedStrategies.filter((x) => !allRemovedStrategies.has(x)).map((x) => '0x'.concat(x.slice(26, 256)));
+  const vaultFactory = new Contract(VAULT_FACTORY_ADDRESS, VaultFactoryABI, provider);
+  let currentStrategies: string[] = await getCurrentStrategies(vaultFactory, providerForLogs);
 
-  const blockSubscription = blockListener.stream(async (block: Block) => {
+  blockListener.stream(async (block: Block) => {
     const workableStrategies = await getStrategies(jobContract, currentStrategies);
 
     for (const strategy of workableStrategies) {
@@ -124,9 +85,9 @@ export async function factoryHarvestV1Run(
   });
 
   provider.on(vaultFactory.filters.NewAutomatedVault(), async () => {
-    // When a new vault is deployed, the script resets and re loads the strategies to work
-    blockSubscription();
-    await factoryHarvestV1Run(jobContract, provider, workMethod, broadcastMethod);
+    console.log('^^^^^^^^^^^^^^^^^ NEW AUTOMATED VAULT ^^^^^^^^^^^^^^^^^');
+    // When a new vault is deployed, reload the strategies to work
+    currentStrategies = await getCurrentStrategies(vaultFactory, providerForLogs);
   });
 }
 
@@ -141,4 +102,37 @@ function removeStrategy(strategiesArray: string[], strategy: string) {
   }
 
   strategiesArray.splice(indexOfStrategyToRemove, 1);
+}
+
+async function getCurrentStrategies(
+  vaultFactory: Contract,
+  providerForLogs: providers.WebSocketProvider | providers.JsonRpcProvider,
+): Promise<string[]> {
+  const allVaults: string[] = await vaultFactory.allDeployedVaults();
+  console.log(`Fetching current strategies from ${allVaults.length} vaults`);
+
+  const logsByTopic: Record<string, Event[]> = {};
+  for (const topic of TOPICS) {
+    const filter = {
+      address: allVaults,
+      topics: [topic],
+      fromBlock: VAULT_FACTORY_DEPLOYMENT_BLOCK,
+    };
+    logsByTopic[topic] = await providerForLogs.send('eth_getLogs', [filter]);
+  }
+
+  const strategyAdded = logsByTopic[TOPIC_STRATEGY_ADDED].map((event) => event.topics[1]);
+  const strategyAddedToQueue = logsByTopic[TOPIC_STRATEGY_ADDED_TO_QUEUE].map((event) => event.topics[1]);
+  const strategyMigratedFrom = logsByTopic[TOPIC_STRATEGY_MIGRATED].map((event) => event.topics[1]);
+  const strategyMigratedTo = logsByTopic[TOPIC_STRATEGY_MIGRATED].map((event) => event.topics[2]);
+  const strategyRemovedFromQueue = logsByTopic[TOPIC_STRATEGY_REMOVED_FROM_QUEUE].map((event) => event.topics[1]);
+  const strategyRevoked = logsByTopic[TOPIC_STRATEGY_REVOKED].map((event) => event.topics[1]);
+
+  const allAddedStrategies = strategyAdded.concat(strategyMigratedTo).concat(strategyAddedToQueue);
+  const allRemovedStrategies = new Set(strategyRevoked.concat(strategyMigratedFrom).concat(strategyRemovedFromQueue));
+  const currentStrategies = allAddedStrategies.filter((x) => !allRemovedStrategies.has(x)).map((x) => '0x'.concat(x.slice(26, 256)));
+
+  console.log(`Found ${currentStrategies.length} strategies`);
+
+  return currentStrategies;
 }
